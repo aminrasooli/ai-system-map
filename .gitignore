@@ -1,0 +1,38 @@
+# Never commit a filled-in System Map. It describes real infrastructure.
+/system-map/
+*-system-map/
+!examples/sample-system-map/
+
+# Collected evidence from the inventory scripts
+/evidence/
+*.evidence
+inventory-*.txt
+exposure-*.txt
+
+# Credentials and environment — never, under any circumstance
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+authorized_keys
+known_hosts
+
+# Editor and OS noise
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Agent and tooling artifacts
+.claude/
+.mcp.json
+
+# Temporary
+/tmp/
+*.tmp
+*.log
