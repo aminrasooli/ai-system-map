@@ -115,6 +115,29 @@ for s in inventory-host.sh inventory-services.sh inventory-ports.sh check-public
 done
 
 echo
+echo "== empty listener sections say 'none' rather than printing blank =="
+# Regression: `tail -n +2` exits 0 on empty input, so an `|| echo none`
+# fallback never fires and the section rendered as a blank gap.
+ports_out="$TMP/inventory-ports.sh.out"
+if [ -f "$ports_out" ]; then
+  for heading in "loopback" "wildcard" "specific non-loopback"; do
+    body="$(awk -v h="$heading" '
+      index($0, h) && /^---/ { grab = 1; next }
+      grab && /^---/         { exit }
+      grab && /^==/          { exit }
+      grab                   { print }
+    ' "$ports_out" | tr -d '[:space:]')"
+    if [ -n "$body" ]; then
+      ok "section '$heading' is non-empty"
+    else
+      bad "section '$heading' rendered blank (should say 'none')"
+    fi
+  done
+else
+  bad "inventory-ports.sh output not captured"
+fi
+
+echo
 echo "== scripts do not print secret material =="
 # The scripts must not emit anything that looks like a credential, even when
 # run on a host that has them.

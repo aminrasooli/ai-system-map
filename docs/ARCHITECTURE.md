@@ -10,8 +10,10 @@ It is written once, at the moment of highest optimism, and then drifts. An
 agent that trusts such a document will act on a fiction.
 
 AI System Map is built around the opposite assumption: the document is only
-useful if it is continuously reconciled against what the machine is actually
-doing. Where the two disagree, the machine is right.
+useful if it is refreshed against what the machine is actually doing. That
+refresh is an operational practice, performed by an operator or an agent —
+this project does not reconcile anything automatically. Where the two
+disagree, the machine is right.
 
 ## Four concepts
 

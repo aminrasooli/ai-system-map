@@ -52,9 +52,16 @@ printf '%s\n' "$LISTEN_RAW" \
 
 echo
 echo "--- specific non-loopback addresses ---"
-printf '%s\n' "$LISTEN_RAW" \
+# tail -n +2 drops the header row and still exits 0 on empty input, so the
+# emptiness has to be tested rather than inferred from the exit status.
+specific="$(printf '%s\n' "$LISTEN_RAW" \
   | grep -vE '(127\.[0-9]+\.[0-9]+\.[0-9]+|\[::1\]|0\.0\.0\.0|\*:|\[::\]:)' \
-  | tail -n +2 || echo "  none"
+  | tail -n +2)"
+if [ -n "$(printf '%s' "$specific" | tr -d '[:space:]')" ]; then
+  printf '%s\n' "$specific"
+else
+  echo "  none"
+fi
 
 section "UDP LISTENERS"
 if have ss; then

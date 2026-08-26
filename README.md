@@ -25,6 +25,50 @@ AI System Map
 Real Linux Host
 ```
 
+## See it in action
+
+The scripts inspect the machine. They are read-only, and they say `UNKNOWN`
+rather than guessing or escalating privileges.
+
+```console
+$ ./scripts/inventory-host.sh
+
+== IDENTITY ==
+hostname:      dev-box
+os:            Ubuntu 24.04 LTS
+current user:  developer
+
+== UPTIME AND BOOT ==
+booted:        2026-01-02 09:14:31
+uptime:        up 6 weeks, 2 days
+
+note: a process older than a configuration file is running the older
+      code. Compare service start times against deploy times.
+```
+
+That last note is the point. A service started six weeks ago is not running
+the fix you committed yesterday.
+
+```console
+$ ./scripts/check-public-exposure.sh
+
+== WILDCARD LISTENERS (directly reachable if the firewall allows) ==
+LISTEN 0 4096  0.0.0.0:8443   0.0.0.0:*
+
+== FIREWALL ==
+ufw present; rule list requires elevation -> UNKNOWN
+
+== REVERSE PROXY / TUNNEL PROCESSES ==
+  cloudflared    RUNNING
+
+If any are running, a loopback-bound service may be PUBLIC_VIA_PROXY.
+```
+
+The tool gathers this evidence and tells you what still needs review. It does
+not claim to have resolved it: a tunnel is running, so a loopback service may
+be internet-facing, and only reading that tunnel's routing configuration will
+settle it. You record the conclusion — or `UNKNOWN` — in your map.
+
 ## Why this exists
 
 An agent asked to "deploy the API" or "lock down that port" has to answer a
@@ -60,7 +104,7 @@ The map answers, in one place:
 ## Quick start
 
 ```bash
-git clone https://github.com/example/ai-system-map.git
+git clone https://github.com/aminrasooli/ai-system-map.git
 cd ai-system-map
 
 # 1. Collect read-only evidence about the current host.
@@ -125,6 +169,15 @@ wire this into an agent, vendor-neutrally.
 - **It is not a policy engine.** The validator checks that your documents are
   complete and internally consistent, not that your infrastructure is
   compliant with a standard.
+- **It does not compare your map against live state.** The validator reads
+  documents only — it never inspects the running machine, so it cannot tell
+  you that your map has gone stale. Refreshing the map is a practice you
+  perform, not something this tool automates. An observed-versus-declared
+  comparison is a roadmap item, not a current feature.
+- **It does not run or verify backups.** It records what you say is protected
+  and whether you say recovery has been tested, and validates that those
+  declarations are present. It never contacts a backup provider, inspects a
+  snapshot, or performs a restore.
 - **It is not a secrets manager.** It records that a credential exists and
   where it lives. It never records the value.
 - **It does not provision anything.** No cloud APIs, no Terraform, no
@@ -151,6 +204,9 @@ See [SECURITY.md](SECURITY.md) for reporting a vulnerability.
 
 Short, deliberately:
 
+- An observed-versus-declared comparison, so the tool can point out where a
+  map has gone stale. Not implemented today; the validator reads documents
+  only.
 - More exposure detectors (additional proxy and tunnel families).
 - A richer cross-document consistency check in the validator.
 - Optional machine-readable (JSON) output from the inventory scripts.
