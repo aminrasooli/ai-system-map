@@ -13,14 +13,20 @@ Nothing here installs anything, and nothing runs as a daemon.
 
 ## 1. Collect evidence
 
-Run the inventory scripts. All four are read-only.
+Run the inventory scripts. All five are read-only.
 
 ```bash
 bash scripts/inventory-host.sh
 bash scripts/inventory-services.sh
 bash scripts/inventory-ports.sh
 bash scripts/check-public-exposure.sh
+bash scripts/check-boot-safety.sh
 ```
+
+The last one is a preflight rather than an inventory: it reports whether the
+kernel that boots next still has its GPU driver and whether a fallback kernel
+exists. Run it again before every upgrade or reboot (see
+[BOOT-SAFETY.md](BOOT-SAFETY.md)).
 
 Each prints a plain-text report to stdout. Redirect them if you want to keep
 the raw evidence:

@@ -112,6 +112,7 @@ bash scripts/inventory-host.sh
 bash scripts/inventory-services.sh
 bash scripts/inventory-ports.sh
 bash scripts/check-public-exposure.sh
+bash scripts/check-boot-safety.sh      # before any upgrade or reboot
 
 # 2. Copy the templates somewhere durable and fill them in.
 mkdir -p ~/system-map
@@ -126,6 +127,32 @@ System Map for you: a human or an agent reads the evidence and records the
 parts that matter, with the context a raw dump cannot supply.
 
 See [docs/QUICKSTART.md](docs/QUICKSTART.md) for a walkthrough.
+
+## Before you reboot
+
+Recovery is part of the map, and the most common self-inflicted outage on a
+GPU host is a reboot into a kernel that has no driver: a kernel meta-package
+installed a newer kernel, the prebuilt NVIDIA module for it never arrived,
+and the bootloader defaulted to "newest". `check-boot-safety.sh` is a
+read-only preflight for exactly that:
+
+```console
+$ ./scripts/check-boot-safety.sh
+
+[WARNING] boot.next_kernel: next boot is 6.8.0-50-generic, not the running 6.8.0-45-generic
+[BLOCKED] gpu.driver.next_boot: next boot kernel 6.8.0-50-generic has NO NVIDIA module
+          - booting 6.8.0-50-generic would bring the system up without the NVIDIA driver
+[PASS   ] gpu.fallback: GPU-capable fallback kernel(s): 6.8.0-45-generic (550.10.01)
+[WARNING] packages.holds: NVIDIA packages are held but kernel meta-package(s) are not: linux-generic
+```
+
+It resolves the next-boot kernel (GRUB or systemd-boot), inventories the
+NVIDIA module for every installed kernel, checks DKMS state without assuming
+a build will succeed, looks for a GPU-capable fallback, and reads what
+`apt-get -s` would do. `--target KERNEL` evaluates a planned one-time boot;
+`--json` feeds a watchdog. Hosts without an NVIDIA GPU, without GRUB, or
+without apt get `PASS`/`UNKNOWN` findings rather than guesses. Details in
+[docs/BOOT-SAFETY.md](docs/BOOT-SAFETY.md).
 
 ## Example
 

@@ -32,11 +32,13 @@ prints, add a case to `tests/test-basic.sh`.
 ## Before opening a pull request
 
 ```bash
-bash tests/test-basic.sh
+bash tests/test-basic.sh          # also runs tests/test-boot-safety.sh
 bash scripts/validate-system-map.sh examples/sample-system-map
 ```
 
-Both must pass. If you have `shellcheck` installed, please also run:
+Both must pass. If you change `scripts/check-boot-safety.sh`, add a fixture
+scenario to `tests/test-boot-safety.sh`; its fixtures are synthetic hosts, so
+a new case must not depend on the machine running the tests. If you have `shellcheck` installed, please also run:
 
 ```bash
 shellcheck scripts/*.sh tests/*.sh
@@ -56,6 +58,8 @@ shellcheck scripts/*.sh tests/*.sh
 Things that fit:
 
 - Additional exposure detection for other proxy or tunnel families
+- Additional read-only preflight checks (other bootloaders, other
+  out-of-tree driver families, other package managers) for `check-boot-safety.sh`
 - Better cross-document consistency checks
 - Portability fixes across Linux distributions
 - Documentation improvements

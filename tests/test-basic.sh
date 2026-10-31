@@ -101,7 +101,9 @@ fi
 
 echo
 echo "== inventory scripts run read-only and do not error out =="
-for s in inventory-host.sh inventory-services.sh inventory-ports.sh check-public-exposure.sh; do
+# check-boot-safety.sh exits non-zero by design when it finds something
+# (WARNING/BLOCKED/UNKNOWN), so for it a report counts as a run.
+for s in inventory-host.sh inventory-services.sh inventory-ports.sh check-public-exposure.sh check-boot-safety.sh; do
   if timeout 60 bash "$ROOT/scripts/$s" >"$TMP/$s.out" 2>&1; then
     ok "runs: $s"
   else
@@ -113,6 +115,15 @@ for s in inventory-host.sh inventory-services.sh inventory-ports.sh check-public
     fi
   fi
 done
+
+echo
+echo "== boot safety preflight: fixture suite =="
+if bash "$ROOT/tests/test-boot-safety.sh" >"$TMP/boot-safety-tests.out" 2>&1; then
+  ok "test-boot-safety.sh: $(grep -E '^passed:' "$TMP/boot-safety-tests.out" | tail -1)"
+else
+  bad "test-boot-safety.sh failed"
+  grep -E '^  FAIL|^passed:' "$TMP/boot-safety-tests.out" | sed 's/^/       /'
+fi
 
 echo
 echo "== empty listener sections say 'none' rather than printing blank =="
@@ -141,7 +152,7 @@ echo
 echo "== scripts do not print secret material =="
 # The scripts must not emit anything that looks like a credential, even when
 # run on a host that has them.
-for s in inventory-host.sh inventory-services.sh inventory-ports.sh check-public-exposure.sh; do
+for s in inventory-host.sh inventory-services.sh inventory-ports.sh check-public-exposure.sh check-boot-safety.sh; do
   if grep -qiE 'BEGIN [A-Z ]*PRIVATE KEY|[A-Za-z0-9_-]{32,}\.[A-Za-z0-9_-]{20,}\.' "$TMP/$s.out" 2>/dev/null; then
     bad "possible secret material in output of $s"
   else
