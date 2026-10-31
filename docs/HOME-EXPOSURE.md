@@ -77,10 +77,10 @@ limits the listing (default 50).
 - Large tool directories (`.git`, `node_modules`, `.cache`, virtualenvs)
   are skipped for speed.
 - Inside a user namespace (a container or an agent sandbox), ACL entries
-  for ids outside the namespace's map are dropped from `getfacl` output.
-  When a mask entry exists but no named entry is visible, the script
-  reports `UNKNOWN` and asks for a run from a normal host shell, rather
-  than calling the directory private.
+  for ids outside the namespace's map are shown as `4294967295`. The script
+  still reports them as principals that can traverse, labelled as such.
+  A mask with no named entries is what `setfacl -x` leaves behind and
+  grants nothing.
 - Accounts whose primary group is the home directory's group are not listed
   by `getent group`; the script says so instead of claiming none exist.
 

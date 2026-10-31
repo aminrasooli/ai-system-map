@@ -174,14 +174,14 @@ if [ "$acl_ok" -eq 1 ]; then
   expect_line '^VERDICT: PRIVATE$' "verdict PRIVATE"
 
   echo
-  echo "== mask without a visible named entry: UNKNOWN, never PRIVATE =="
+  echo "== mask left behind after setfacl -x: still PRIVATE =="
   mkhome "$TMP/h10" 750
   setfacl -m "u:$ACL_ID:--x" "$TMP/h10"
   setfacl -x "u:$ACL_ID" "$TMP/h10"
   run "$TMP/h10"
-  expect_rc 2 "orphan mask exits 2"
-  expect_line 'mask entry exists but no named entry is visible -> UNKNOWN' "explains the hidden-entry possibility"
-  expect_no_line '^VERDICT: PRIVATE' "does not claim PRIVATE"
+  expect_rc 0 "orphan mask exits 0"
+  expect_line 'mask present but no named entries' "orphan mask explained"
+  expect_line '^VERDICT: PRIVATE$' "orphan mask grants nothing"
   no_marker "orphan mask"
 
   echo

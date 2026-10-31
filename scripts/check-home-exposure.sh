@@ -128,14 +128,9 @@ if have getfacl; then
     [ -n "$mask" ] || mask="rwx"
     named="$(printf '%s\n' "$acl" | awk -F: '($1=="user"||$1=="group") && $2!="" {print $1":"$2":"$3}')"
     if [ -z "$named" ] && [ "$has_mask" -eq 1 ]; then
-      # A mask without any visible named entry is either a leftover from a
-      # removed entry, or an entry for an id this process cannot see: inside
-      # a user namespace (container, sandbox) unmapped ids are dropped from
-      # getfacl output. Do not report PRIVATE on that evidence.
-      echo "acl:          a mask entry exists but no named entry is visible -> UNKNOWN"
-      echo "              (entries for ids not mapped in this namespace are hidden;"
-      echo "               re-run 'getfacl -n' from a normal host shell)"
-      unknown=1
+      # setfacl -x leaves the mask behind after the last named entry is
+      # removed. It grants nothing on its own.
+      echo "acl:          mask present but no named entries (usually left behind by setfacl -x); no effect"
     elif [ -z "$named" ]; then
       echo "acl:          no named user/group entries"
     else
@@ -144,7 +139,11 @@ if have getfacl; then
         # effective = entry AND mask; only the execute bit matters for traversal
         if [ "${perms:2:1}" = "x" ] && [ "${mask:2:1}" = "x" ]; then
           name="$id"
-          if have getent; then
+          if [ "$id" = "4294967295" ]; then
+            # Inside a user namespace, ids outside its map are shown as the
+            # overflow id. The entry still exists on the host.
+            name="an id outside this user namespace (shown as 4294967295)"
+          elif have getent; then
             db=passwd; [ "$kind" = "group" ] && db=group
             resolved="$(getent "$db" "$id" 2>/dev/null | cut -d: -f1)"
             [ -n "$resolved" ] && name="$resolved ($id)"
