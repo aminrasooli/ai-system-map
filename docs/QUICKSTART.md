@@ -22,6 +22,13 @@ bash scripts/inventory-ports.sh
 bash scripts/check-public-exposure.sh
 ```
 
+Optionally, check whether other local accounts can read credential-shaped
+files in your home directory (see [HOME-EXPOSURE.md](HOME-EXPOSURE.md)):
+
+```bash
+bash scripts/check-home-exposure.sh
+```
+
 Each prints a plain-text report to stdout. Redirect them if you want to keep
 the raw evidence:
 

@@ -112,6 +112,7 @@ bash scripts/inventory-host.sh
 bash scripts/inventory-services.sh
 bash scripts/inventory-ports.sh
 bash scripts/check-public-exposure.sh
+bash scripts/check-home-exposure.sh    # optional: local account exposure
 
 # 2. Copy the templates somewhere durable and fill them in.
 mkdir -p ~/system-map
@@ -126,6 +127,14 @@ System Map for you: a human or an agent reads the evidence and records the
 parts that matter, with the context a raw dump cannot supply.
 
 See [docs/QUICKSTART.md](docs/QUICKSTART.md) for a walkthrough.
+
+`check-home-exposure.sh` looks inward instead of outward. A home directory
+with mode `0750` looks private, but a single ACL entry added so that a
+service or agent account can reach one tool lets that account traverse the
+whole tree, and every world-readable `.env`, key or database below it
+becomes readable. The check reports who can traverse, and which
+credential-shaped files are reachable, by path and mode only. See
+[docs/HOME-EXPOSURE.md](docs/HOME-EXPOSURE.md).
 
 ## Example
 
