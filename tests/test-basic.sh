@@ -162,6 +162,15 @@ for f in "$ROOT"/scripts/*.sh; do
 done
 
 echo
+echo "== home exposure check (fixture suite) =="
+if bash "$ROOT/tests/test-home-exposure.sh" >"$TMP/home-exposure.out" 2>&1; then
+  ok "tests/test-home-exposure.sh ($(grep -E '^passed:' "$TMP/home-exposure.out"))"
+else
+  bad "tests/test-home-exposure.sh"
+  grep -E 'FAIL' "$TMP/home-exposure.out" | sed 's/^/       /'
+fi
+
+echo
 echo "================================"
 printf 'passed: %d   failed: %d\n' "$PASS" "$FAIL"
 if [ "$FAIL" -gt 0 ]; then
